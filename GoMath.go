@@ -19,14 +19,17 @@ var (
 
 func main() {
 	var (
-		frac, series1, series2, series3, series4 float64
-		position                                 int
-		hexadecimal                              string
+		series1 float64
+		//frac, series1, series2, series3, series4 float64
+		//position                                 int
+		//hexadecimal                              string
 	)
 
 	fillTable()
 
-	fmt.Println("Answer:", r)
+	series1 = hexpi(1, 1000000)
+
+	fmt.Println(series1)
 }
 
 func fillTable() {
@@ -37,27 +40,42 @@ func fillTable() {
 	}
 }
 
-func hexpi(j, d int) float64 {
-	d := float64(pos)
-	var result float64
+func hexpi(jConstant, position int) float64 {
+	var (
+		denominator, power, sum, term, pos, j float64
+	)
 
-	for i := 0; i < pos; i++ {
+	j = float64(jConstant)
+	pos = float64(position)
+
+	for i := 0; i < position; i++ {
 		k := float64(i)
-		numerator := math.Pow(16, d-k)
-		den := 8.0*k + 1
-		modulus := math.Mod(numerator, den)
-		result = result + (modulus / den)
+		denominator = 8.0*k + j
+		power = pos - k
+		term = base16pow(power, denominator)
+		sum = sum + term/denominator
 
-		if result > 1 {
-			result = getDecimal(result)
-		}
+		//remove the integer piece of the sum
+		sum = getDecimal(sum)
 	}
 
-	something := 37.55643
+	//compute an arbitrary amount past the nth term
+	for i := position; i < position+50; i++ {
+		k := float64(i)
+		denominator = 8.0 * k * j
 
-	c := getDecimal(something)
+		term = math.Pow(16.0, (pos - k))
 
-	fmt.Println(c, result)
+		if term < Epsilon {
+			break
+		}
+
+		sum = sum + term/denominator
+		sum = getDecimal(sum)
+	}
+
+	fmt.Println(sum)
+	return sum
 }
 
 func getDecimal(myNumber float64) float64 {
