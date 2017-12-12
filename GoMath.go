@@ -8,7 +8,7 @@ import (
 
 const (
 	//HexDigits is number of hexadecimal digits
-	HexDigits      int     = 16
+	HexDigits      int     = 10
 	Epsilon        float64 = 1e-17 //a constant for the second part of the sum
 	CountTwoPowers int     = 25    //number of power of twos in the table
 )
@@ -19,17 +19,29 @@ var (
 
 func main() {
 	var (
-		series1 float64
-		//frac, series1, series2, series3, series4 float64
-		//position                                 int
+		frac, series1, series2, series3, series4 float64
+		position                                 int
 		//hexadecimal                              string
 	)
 
+	//set the variables
+	position = 1000000
+
 	fillTable()
 
-	series1 = hexpi(1, 1000000)
+	series1 = hexpi(1, position)
+	series2 = hexpi(4, position)
+	series3 = hexpi(5, position)
+	series4 = hexpi(6, position)
 
-	fmt.Println(series1)
+	frac = 4*series1 - 2*series2 - series3 - series4
+	frac = getDecimal(frac) + 1
+
+	//0.42342979756754
+
+	hexadecimals := hexString(frac, HexDigits)
+
+	fmt.Println("Hexadecimals:", hexadecimals)
 }
 
 func fillTable() {
@@ -38,6 +50,23 @@ func fillTable() {
 	for i := 1; i < CountTwoPowers; i++ {
 		TableTwoPowers[i] = 2.0 * TableTwoPowers[i-1]
 	}
+}
+
+func hexString(x float64, digits int) string {
+	var (
+		reference = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}
+		result    string
+	)
+
+	for i := 0; i < digits; i++ {
+		y := 16.0 * x
+		floor := int(math.Floor(y))
+		result = result + reference[floor]
+		fmt.Println(x, y)
+		x = getDecimal(y)
+	}
+
+	return result
 }
 
 func hexpi(jConstant, position int) float64 {
@@ -60,26 +89,26 @@ func hexpi(jConstant, position int) float64 {
 	}
 
 	//compute an arbitrary amount past the nth term
-	for i := position; i < position+50; i++ {
+	for i := position; i < position+1000; i++ {
 		k := float64(i)
+
 		denominator = 8.0 * k * j
 
-		term = math.Pow(16.0, (pos - k))
+		term = math.Pow(16.0, (pos-k)) / denominator
 
 		if term < Epsilon {
 			break
 		}
 
-		sum = sum + term/denominator
+		sum = sum + term
 		sum = getDecimal(sum)
 	}
 
-	fmt.Println(sum)
 	return sum
 }
 
 func getDecimal(myNumber float64) float64 {
-	wholeNum := int64(myNumber)
+	wholeNum := int(myNumber)
 	return myNumber - float64(wholeNum)
 }
 
