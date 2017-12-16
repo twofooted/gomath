@@ -11,6 +11,7 @@ const (
 	HexDigits      int     = 10
 	Epsilon        float64 = 1e-17 //a constant for the second part of the sum
 	CountTwoPowers int     = 25    //number of power of twos in the table
+	Prec                   = 200   //Precision of the *big.Float types
 )
 
 var (
@@ -69,9 +70,10 @@ func hexString(x float64, digits int) string {
 	return result
 }
 
-func hexpi(jConstant, position int) float64 {
+func hexpi(jConstant, position int) *big.Float {
 	var (
-		denominator, power, sum, term, pos, j float64
+		denominator, power float64
+		sum, term, pos, j  float64
 	)
 
 	j = float64(jConstant)
@@ -140,13 +142,14 @@ func bigpower(x, n int) int {
 	return r
 }
 
-func base16pow(pos, mod float64) float64 {
+func base16pow(pos, mod float64) *big.Float {
 	var (
-		i                      int
-		power1, power2, result float64
+		i              int
+		power1, power2 float64
+		result         *big.Float
 	)
 	if mod == 1.0 {
-		return 0.0
+		return new(big.Float).SetPrec(Prec).SetFloat64(0.0)
 	}
 
 	for i = 0; i < CountTwoPowers; i++ {
@@ -157,13 +160,14 @@ func base16pow(pos, mod float64) float64 {
 
 	power1 = pos
 	power2 = TableTwoPowers[i-1]
-	result = 1.0
+	result = new(big.Float).SetPrec(Prec).SetFloat64(1.0)
+	sixteen := new(big.Float).SetPrec(Prec).SetFloat64(16.0)
 
 	//Binary exponentiation algorithm
 
 	for j := 0; j <= i; j++ {
 		if power1 >= power2 {
-			result = 16.0 * result
+			result = result.Mul(sixteen, result) // 16 * result
 			wholeNum := int(result / mod)
 			result = result - float64(wholeNum)*mod
 			power1 = power1 - power2
