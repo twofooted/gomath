@@ -3,31 +3,28 @@ package main
 import (
 	"fmt"
 	"math"
-	"math/big"
 )
 
 const (
-	//HexDigits is number of hexadecimal digits
-	HexDigits      int     = 10
+	HexDigits      int     = 10    //HexDigits is number of hexadecimal digits
 	Epsilon        float64 = 1e-17 //a constant for the second part of the sum
 	CountTwoPowers int     = 25    //number of power of twos in the table
-	Prec                   = 200   //Precision of the *big.Float types
 )
 
 var (
-	TableTwoPowers [CountTwoPowers]float64
+	TableTwoPowers [CountTwoPowers]float64 //table of powers of two up to 2**CountTwoPowers
 )
 
 func main() {
 	var (
 		frac, series1, series2, series3, series4 float64
 		position                                 int
-		//hexadecimal                              string
 	)
 
 	//set the variables
 	position = 1000000
 
+	//set the power of twos table
 	fillTable()
 
 	series1 = hexpi(1, position)
@@ -38,7 +35,7 @@ func main() {
 	frac = 4*series1 - 2*series2 - series3 - series4
 	frac = getDecimal(frac) + 1
 
-	//0.42342979756754
+	//0.42342979756754 should be the answer for p=1000000
 
 	hexadecimals := hexString(frac, HexDigits)
 
@@ -70,7 +67,7 @@ func hexString(x float64, digits int) string {
 	return result
 }
 
-func hexpi(jConstant, position int) *big.Float {
+func hexpi(jConstant, position int) float64 {
 	var (
 		denominator, power float64
 		sum, term, pos, j  float64
@@ -114,42 +111,14 @@ func getDecimal(myNumber float64) float64 {
 	return myNumber - float64(wholeNum)
 }
 
-func odd(x int) bool {
-	if x%2 != 0 {
-		return true
-	}
-	return false
-}
-
-func bigpower(x, n int) int {
-	r := 1
-	y := x
-
-	for n > 1 {
-		if odd(n) {
-			r = r * y
-		}
-
-		temp := math.Floor(float64(n) / 2.0)
-
-		n = int(temp)
-		y = y * y
-	}
-	r = r * y
-
-	result := big.NewInt(int64(r))
-	fmt.Println("Big Int:", result)
-	return r
-}
-
-func base16pow(pos, mod float64) *big.Float {
+func base16pow(pos, mod float64) float64 {
 	var (
 		i              int
 		power1, power2 float64
-		result         *big.Float
+		result         float64
 	)
 	if mod == 1.0 {
-		return new(big.Float).SetPrec(Prec).SetFloat64(0.0)
+		return 0.0
 	}
 
 	for i = 0; i < CountTwoPowers; i++ {
@@ -160,14 +129,13 @@ func base16pow(pos, mod float64) *big.Float {
 
 	power1 = pos
 	power2 = TableTwoPowers[i-1]
-	result = new(big.Float).SetPrec(Prec).SetFloat64(1.0)
-	sixteen := new(big.Float).SetPrec(Prec).SetFloat64(16.0)
+	result = 1.0
 
 	//Binary exponentiation algorithm
 
 	for j := 0; j <= i; j++ {
 		if power1 >= power2 {
-			result = result.Mul(sixteen, result) // 16 * result
+			result = 16 * result
 			wholeNum := int(result / mod)
 			result = result - float64(wholeNum)*mod
 			power1 = power1 - power2
